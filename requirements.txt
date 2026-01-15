@@ -7,3 +7,4 @@ whitenoise
 python-dotenv
 requests
 Pillow
+django-cors-headers
