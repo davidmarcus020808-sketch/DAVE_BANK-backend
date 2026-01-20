@@ -1,1 +1,1 @@
-web: gunicorn backdave_bank.wsgi
+web: gunicorn backdave_bank.wsgi --log-file -

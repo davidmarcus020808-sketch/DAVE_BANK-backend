@@ -4,6 +4,8 @@ import os
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import dj_database_url
+
 
 # --------------------------
 # Load .env file
@@ -13,9 +15,13 @@ load_dotenv(BASE_DIR / ".env")  # Load environment variables from .env
 
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-&o+5eesu@09u-0qazi@@od2@ajpq$-8qrof%g3d7s4+p7*lxn&")
-DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
+DEBUG = os.getenv("DJANGO_DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    ".onrender.com"  # ✅ Render auto subdomains
+]
 
 # --------------------------
 # Installed apps
@@ -38,18 +44,17 @@ INSTALLED_APPS = [
 # Middleware
 # --------------------------
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',       # must be at the top
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ ADD THIS
 
+]
 
 # --------------------------
 # URLs and templates
@@ -77,10 +82,9 @@ WSGI_APPLICATION = 'backdave_bank.wsgi.application'
 # Database
 # --------------------------
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    "default": dj_database_url.config(
+        default=os.getenv("DATABASE_URL")  # Render provides this
+    )
 }
 
 # --------------------------
@@ -137,16 +141,20 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = False
-
+# --------------------------
+# CORS settings for local dev
+# --------------------------
 CORS_ALLOWED_ORIGINS = [
-    "https://dave-bank-frontend.vercel.app",
+    "http://localhost:5173",  # React dev server
+    "http://localhost:5174",  # Vue dev server
+    "http://127.0.0.1:5175",  # Alternative localhost
+    "https://davebank.vercel.app",  # ✅ ADD THIS
 ]
+CORS_ALLOW_CREDENTIALS = True  # allow cookies for JWT refresh
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://dave-bank-frontend.vercel.app",
+    "https://davebank.vercel.app",
 ]
-CORS_ALLOW_CREDENTIALS = True
 
 
 
@@ -155,6 +163,9 @@ CORS_ALLOW_CREDENTIALS = True
 # --------------------------
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # --------------------------
 # --------------------------

@@ -297,15 +297,6 @@ class TransferVerifyView(APIView):
 
 # --------------------------
 # PIN VIEWS
-# --------------------------
-class ValidatePinView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request):
-        pin = request.data.get("pin")
-        if not pin or not request.user.check_pin(pin):
-            return Response({"valid": False}, status=400)
-        return Response({"valid": True})
 
 
 class UpdatePinView(APIView):
@@ -316,41 +307,19 @@ class UpdatePinView(APIView):
         if not pin or len(pin) != 4 or not pin.isdigit():
             return Response({"error": "Invalid PIN"}, status=400)
 
-        request.user.set_pin(pin)
+        request.user.set_pin(pin, save=False)
+        request.user.save(update_fields=["password"])  # force save
         return Response({"success": True})
 
-
 # --------------------------
-# TRANSACTION VIEW
-# --------------------------
-# class TransactionView(APIView):
-#     permission_classes = [permissions.IsAuthenticated]
+class ValidatePinView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
-#     def get(self, request):
-#         txs = request.user.transactions.order_by("-date")[:100]
-#         return Response(TransactionSerializer(txs, many=True).data)
-
-#     def post(self, request):
-#         data = request.data.copy()
-#         tx_type = data.get("type")
-
-#         with transaction.atomic():
-#             if tx_type in ["Transfer", "Bill Payment"]:
-#                 pin = data.get("pin")
-#                 if not request.user.check_pin(pin):
-#                     return Response({"error": "Invalid PIN"}, status=400)
-
-#             serializer = TransactionSerializer(data=data, context={"request": request})
-#             serializer.is_valid(raise_exception=True)
-
-#             tx = serializer.save(user=request.user)
-
-#             # Reward points
-#             if tx.type not in ["Reward Points", "Reward Redemption"]:
-#                 Transaction.objects.create(user=request.user, type="Reward Points", points=100, amount=0)
-
-#             return Response({"success": True, "reference": f"TXN-{tx.id:06d}"})
-
+    def post(self, request):
+        pin = request.data.get("pin")
+        if not pin or not request.user.check_pin(pin):
+            return Response({"valid": False}, status=400)
+        return Response({"valid": True})
 
 
 class TransactionView(APIView):
