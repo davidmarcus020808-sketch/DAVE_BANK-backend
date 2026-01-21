@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-import dj_database_url
 
 
 # --------------------------
@@ -85,13 +84,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": (
-            "/opt/render/project/data/db.sqlite3"
-            if os.getenv("RENDER")
-            else BASE_DIR / "db.sqlite3"
-        ),
+        "NAME": BASE_DIR / "db.sqlite3",  # SQLite file inside your project
     }
 }
+
 # --------------------------
 # Custom User Model
 # --------------------------
